@@ -3,38 +3,61 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Product;   // Contoh model produk
-use App\Models\Order;     // Contoh model transaksi/pesanan
+use App\Models\Product;
+use App\Models\Customer;
+use App\Models\Order;
 
 class DashboardController extends Controller
 {
-    // Menampilkan halaman dashboard utama
+    // Halaman utama dashboard
     public function index()
     {
-        // Ambil data total produk dan total order sebagai contoh
         $totalProducts = Product::count();
+        $totalCustomers = Customer::count();
         $totalOrders = Order::count();
+        $totalRevenue = Order::sum('total_price');
 
-        // Ambil 5 order terbaru
-        $recentOrders = Order::orderBy('created_at', 'desc')->take(5)->get();
+        // 5 transaksi terbaru
+        $recentOrders = Order::with('customer', 'product')->orderBy('created_at', 'desc')->take(5)->get();
 
-        // Kirim data ke view
-        return view('dashboard.index', compact('totalProducts', 'totalOrders', 'recentOrders'));
+        return view('dashboard.index', compact(
+            'totalProducts', 
+            'totalCustomers', 
+            'totalOrders', 
+            'totalRevenue', 
+            'recentOrders'
+        ));
     }
 
-    // Contoh menampilkan detail produk
+    // Detail produk
     public function productDetail($id)
     {
         $product = Product::findOrFail($id);
-
         return view('dashboard.product-detail', compact('product'));
     }
 
-    // Contoh menampilkan laporan pesanan
-    public function orderReport()
+    // Daftar semua pelanggan
+    public function customers()
     {
-        $orders = Order::orderBy('created_at', 'desc')->get();
+        $customers = Customer::orderBy('created_at', 'desc')->get();
+        return view('dashboard.customers', compact('customers'));
+    }
 
-        return view('dashboard.order-report', compact('orders'));
+    // Daftar semua pesanan
+    public function orders()
+    {
+        $orders = Order::with('customer', 'product')->orderBy('created_at', 'desc')->get();
+        return view('dashboard.orders', compact('orders'));
+    }
+
+    // Statistik penjualan (contoh: total per produk)
+    public function salesStats()
+    {
+        $salesPerProduct = Order::selectRaw('product_id, SUM(quantity) as total_qty, SUM(total_price) as total_revenue')
+                                ->groupBy('product_id')
+                                ->with('product')
+                                ->get();
+
+        return view('dashboard.sales-stats', compact('salesPerProduct'));
     }
 }
