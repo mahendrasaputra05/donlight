@@ -10,5 +10,5 @@ Route::get('/dashboard/orders', [DashboardController::class, 'orders'])->name('d
 Route::get('/dashboard/sales-stats', [DashboardController::class, 'salesStats'])->name('dashboard.sales-stats');
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');   // akan memanggil resources/views/home.blade.php
 });

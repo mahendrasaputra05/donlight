@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('transaction_details', function (Blueprint $table) {
             $table->id();
-            $table->foreign()->references('id')->on('transactions')->onDelete('cascade');
-            $table->foreign()->references('id')->on('products')->onDelete('cascade');
-            $table->date('date');
-            $table->integer('price');
+            $table->foreignId('transaction_id')->constrained('transactions')->onDelete('cascade');
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->integer('jumlah');
+            $table->integer('harga');
+            $table->integer('subtotal');
             $table->timestamps();
         });
     }
